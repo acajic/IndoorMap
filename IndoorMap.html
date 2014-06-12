@@ -42,19 +42,13 @@
         function go() {
             map = L.indoor.map('map', {
                     map: "06583882495760918064", // "scripts/Virtual-Up.json", //
-                    project: "b611982d97975bc3e9e02f88f5736d75",// "3a1a2e3979948c2732088a119debc5b4",
+                    project: "3a1a2e3979948c2732088a119debc5b4",// "5ac70dabddf7245e082d61240b819d5d",
                     click: indoorMapClicked
                 },
                 null,
                 function () {
                     var levels = map.getLevels();
                     map.setLevel('1');
-                    
-                    for (var i = 0; i < beacons.length; i++) {
-                        var beacon = beacons[i];
-                        beacon = localizeBeacon(beacon);
-                    }
-
                 });
         }
 
@@ -65,107 +59,8 @@
         }
 
 
-        var beaconsLocalized = false;
-        var beacons = [{
-            id: "1402497740421",
-            level: "1",
-            major: "1",
-            minor: "1",
-            name: "",
-            uuid: "a",
-            wgsLat: "45.80162484785716",
-            wgsLng: "15.930514469518208"
-        },{
-            id: "1402497750628",
-            level: "1",
-            major: "1",
-            minor: "2",
-            name: "",
-            uuid: "a",
-            wgsLat: "45.801594755418876",
-            wgsLng: "15.930625222784068"
-        },{
-            id: "1402497757768",
-            level: "1",
-            major: "1",
-            minor: "3",
-            name: "",
-            uuid: "a",
-            wgsLat: "45.801739948363526",
-            wgsLng: "15.93054707486102"
-        },{
-            id: "1402497764135",
-            level: "1",
-            major: "1",
-            minor: "4",
-            name: "",
-            uuid: "a",
-            wgsLat: "45.80164029792471",
-            wgsLng: "15.930554737980856"
-        },{
-            id: "1402497771845",
-            level: "1",
-            major: "1",
-            minor: "5",
-            name: "",
-            uuid: "a",
-            wgsLat: "45.801535357402024",
-            wgsLng: "15.930546390023503"
-        },{
-            id: "1402497778104",
-            level: "1",
-            major: "1",
-            minor: "6",
-            name: "",
-            uuid: "a",
-            wgsLat: "45.80141140494487",
-            wgsLng: "15.93057042535039"
-        },{
-            id: "1402497783228",
-            level: "1",
-            major: "1",
-            minor: "7",
-            name: "",
-            uuid: "a",
-            wgsLat: "45.80130668690536",
-            wgsLng: "15.930597692249911"
-        },{
-            id: "1402497789587",
-            level: "1",
-            major: "1",
-            minor: "8",
-            name: "",
-            uuid: "a",
-            wgsLat: "45.80128664960081",
-            wgsLng: "15.93079374135578"
-        },{
-            id: "1402497794596",
-            level: "1",
-            major: "1",
-            minor: "9",
-            name: "stype1",
-            uuid: "a",
-            wgsLat: "45.80125000293019",
-            wgsLng: "15.930852496248768"
-        },{
-            id: "1402497801329",
-            level: "1",
-            major: "1",
-            minor: "10",
-            name: "stype2",
-            uuid: "a",
-            wgsLat: "45.80132789899615",
-            wgsLng: "15.930851646095116"
-        },{
-            id: "1402497808743",
-            level: "1",
-            major: "1",
-            minor: "11",
-            name: "xee",
-            uuid: "a",
-            wgsLat: "45.80123592713365",
-            wgsLng: "15.930547951029077"
-        }];
+
+        var beacons = [];
         /*
             A standard beacon is a simple javascript object.
 
@@ -189,9 +84,8 @@
             For permanent storage of beacons it is safer to store the global latitude and longitude values. These values are kept in 'wgsLat' and 'wgsLng' properties of a beacon (lat and lng properties are reserved for local coordinates).
             In order to populate local lat&lng properties based on wgsLat&wgsLng values, one can always call 'beacon = localizeBeacon(beacon)'; 
 
+            
         */
-
-        
 
         var localizingBeacon = null;
         function localizeBeacon(beacon) {
@@ -207,43 +101,6 @@
         }
 
 
-        var beaconMarkers = [];
-
-        var beaconIcon = new L.Icon({
-            iconUrl: 'images/map-pin.gif',
-            iconSize: [15, 24],
-            iconAnchor: [7, 24],
-            shadowUrl: ''
-        });
-
-        var beaconLevel = "0";
-        var beaconsShowing = false;
-
-
-        function showBeaconMarkersOnMap() {
-            hideBeaconsOnMap();
-
-            for (var i = 0; i < beacons.length; i++) {
-                var beacon = beacons[i];
-
-
-                var beaconMarker = new L.Marker(beacon, { icon: beaconIcon });
-                
-                beaconMarker.addTo(map);
-
-                beaconMarkers.push(beaconMarker);
-            }
-        }
-
-        function hideBeaconsOnMap() {
-            for (var i = 0; i < beaconMarkers.length; i++) {
-                var beaconMarker = beaconMarkers[i];
-                map.removeLayer(beaconMarker);
-            }
-            beaconMarkers = [];
-        }
-
-
         // ************ PUBLIC *************
 
 
@@ -251,116 +108,75 @@
             beacons = [];
             for (var i = 0; i < beaconsArray.length; i++) {
                 var beacon = beaconsArray[i];
-                beacons.push(localizeBeacon(beacon));
+                beacon = localizeBeacon(beacon);
             }
         }
 
         
         var highlightTags = {};
-        // var highlightedBeacon = null;
+        var highlightedBeacon = null;
         function highlightBeacon(uuid, major, minor, tags) {
-            var beaconToHighlight = $.grep(beacons, function (someBeacon) {
+            highlightedBeacon = $.grep(beacons, function (someBeacon) {
                 return someBeacon.uuid == uuid && someBeacon.major == major && someBeacon.minor == minor;
             })[0];
 
-            if (!beaconToHighlight)
+            if (!highlightedBeacon)
                 return;
 
-            highlightBeacons([beaconToHighlight], tags);
-        }
 
-        function highlightBeacons(beaconsToHighlight, tags) {
-            initAllRoomFeatures(function(roomFeaturesByFeatureIds, roomFeaturesInBoxes) {
-                for (var i = 0; i < beaconsToHighlight.length; i++) {
-                    var beaconToHighlight = beaconsToHighlight[i];
+            getRoomFeaturesAtLatLng(highlightedBeacon, function (roomFeatures) {
+                var roomFeature = roomFeatures[0];
 
-                    var encapsulatedRoomFeatures = getRoomFeaturesAtLatLng_Sync(beaconToHighlight, roomFeaturesInBoxes);
-
-                    var roomFeature = encapsulatedRoomFeatures[0];
-                    if (!roomFeature)
-                        return;
+                if (!roomFeature)
+                    return;
 
 
-                    var sameRoomBeacons = [];
-                    for (var j = 0; j < beacons.length; j++) {
-                        var otherBeacon = beacons[j];
-                        if (otherBeacon.lat >= roomFeature.containerBox.minLat && otherBeacon.lat <= roomFeature.containerBox.maxLat && otherBeacon.lng >= roomFeature.containerBox.minLng && otherBeacon.lng <= roomFeature.containerBox.maxLng) {
-                            if (isPointInsidePolygon(latlngToPoint(otherBeacon), featureToPolygon(roomFeature.feature))) {
-                                sameRoomBeacons.push(otherBeacon);
-                            }
-                        }
+                var sameRoomBeacons = [];
+                for (var i = 0; i < beacons.length; i++) {
+                    var beacon = beacons[i];
+                    if (beacon.lat >= roomFeature.containerBox.minLat && beacon.lat <= roomFeature.containerBox.maxLat && beacon.lng >= roomFeature.containerBox.minLng && beacon.lng <= roomFeature.containerBox.maxLng) {
+                        sameRoomBeacons.push(beacon);
                     }
+                }
+                
+                var highlight = null;
+                if (sameRoomBeacons.length == 0) {
+                    // should not happen if roomFeature is not null
+                } else if (sameRoomBeacons.length == 1) {
+                    highlight = map.highlightFeatures(roomFeature.feature, { clickable: false, stroke: true, color: '#00ff00', opacity: '0.3' });
+                } else {
+                    
+                    var squareFeature = squareFeatureAroundLatLng(highlightedBeacon, 0.0001);
+                    var squarePolygon = featureToPolygon(squareFeature);
+                    var roomPolygon = featureToPolygon(roomFeature.feature);
+                    
+                    var intersectingPolygon = intersectionPolygons(squarePolygon, roomPolygon);
+                    var intersectingFeature = polygonToFeature(intersectingPolygon);
 
-                    var highlight = null;
-                    if (sameRoomBeacons.length == 0) {
-                        // should not happen if roomFeature is not null
-                    } else if (sameRoomBeacons.length == 1) {
-                        highlight = map.highlightFeatures(roomFeature.feature, { clickable: false, stroke: true, color: '#00ff00', opacity: '0.3' });
-                    } else {
+                    highlight = map.highlightFeatures(intersectingFeature, { clickable: false, stroke: true, color: '#0000ff', opacity: '0.3' });
 
-                        var squareFeature = squareFeatureAroundLatLng(beaconToHighlight, 0.0001);
-                        var squarePolygon = featureToPolygon(squareFeature);
-                        var roomPolygon = featureToPolygon(roomFeature.feature);
-
-                        var intersectingPolygon = intersectionPolygons(squarePolygon, roomPolygon);
-                        var intersectingFeature = polygonToFeature(intersectingPolygon);
-
-                        highlight = map.highlightFeatures(intersectingFeature, { clickable: false, stroke: true, color: '#0000ff', opacity: '0.3' });
-
-
-
-                    }
-
-                    if (highlight) {
-                        if (tags) {
-                            if (tags instanceof Array) {
-                                for (var i = 0; i < tags.length; i++) {
-                                    var tag = tags[i];
-                                    if (!highlightTags[tag])
-                                        highlightTags[tag] = [];
-
-                                    highlightTags[tag].push(highlight);
-                                }
-                            } else {
-                                if (!highlightTags[tags])
-                                    highlightTags[tags] = [];
-
-                                highlightTags[tags].push(highlight);
-                            }
-                        } else {
-                            if (!highlightTags['untagged'])
-                                highlightTags['untagged'] = [];
-
-                            highlightTags['untagged'].push(highlight);
-                        }
-                    }
+                    
 
                 }
+
+                if (highlight) {
+                    for (var i = 0; i < tags.length; i++) {
+                        var tag = tags[i];
+                        if (!highlightTags[tag])
+                            highlightTags[tag] = [];
+
+                        highlightTags[tag].push(highlight);
+                    }
+                }
+                
             });
         }
         
-        
-
-        function removeAllHighlights() {
-            removeHighlightsByTag();
-        }
-
         function removeHighlightsByTag(tag) {
-            if (tag) {
-                var highlights = highlightTags[tag];
-                for (var i = 0; i < highlights.length; i++) {
-                    var highlight = highlights[i];
-                    map.clearHighlight(highlight);
-                }
-            } else {
-                for (var highlightsTag in highlightTags) {
-                    highlights = highlightTags[highlightsTag];
-                    for (var i = 0; i < highlights.length; i++) {
-                        var highlight = highlights[i];
-                        map.clearHighlight(highlight);
-                    }
-
-                }
+            var highlights = highlightTags[tag];
+            for (var i = 0; i < highlights.length; i++) {
+                var highlight = highlights[i];
+                map.clearHighlight(highlight);
             }
         }
 
