@@ -1,0 +1,45 @@
+﻿.leaflet-top {
+    display: none;
+
+}
+
+
+#right-side-menu {
+
+    position: relative;
+    left: 100%;
+    margin-left: -170px;
+
+    top: 0px;
+}
+
+
+#add-beacon-form-popup-template {
+    display: none;
+
+    width: 200px;
+    font-size: 18px;
+}
+
+#add-beacon-form-popup {
+    width: 200px;
+    font-size: 18px;
+}
+
+#show-beacons-switch {
+    position: relative;
+    left: 100%;
+    margin-left: -180px;
+    top: 20px;
+
+    font-size: 18px;
+}
+
+#edit-beacon-form-popup-template {
+    display: none;
+}
+
+#edit-beacon-form-popup {
+    width: 200px;
+}
+
