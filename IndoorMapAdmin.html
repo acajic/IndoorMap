@@ -7,35 +7,39 @@
     <link href='http://indoor.io/indoor.js/1.1.0/js/mapbox/mapbox.css' rel='stylesheet' />
     <link rel="stylesheet" href="mapbox.css" />
 
-    <link rel="stylesheet" href="IndoorMap.css" />
+    <link rel="stylesheet" href="IndoorMapAdmin.css" />
 
 </head>
 
 <body>
     <div id="map" style="width: 100%; height: 100%;">
+
+        <div id="show-beacons-switch">
+            <label class="checkbox">
+                <input type="checkbox" id="show-beacons-checbox">
+                Show beacons
+            </label>
+        </div>
+
+        <div id="right-side-menu" class="btn-group-vertical">
+            <h2>Mode</h2>
+
+            <button type="button" id="nothing" class="btn btn-default">Nothing</button>
+            <button type="button" id="add-beacons" class="btn btn-default">Add Beacons</button>
+            <button type="button" id="add-markers" class="btn btn-default">Add Markers</button>
+        </div>
     </div>
 
 
-    <div id="right-side-menu" class="btn-group-vertical">
-        <h2>Mode</h2>
 
-        <button type="button" id="nothing" class="btn btn-default">Nothing</button>
-        <button type="button" id="add-beacons" class="btn btn-default">Add Beacons</button>
-        <button type="button" id="add-markers" class="btn btn-default">Add Markers</button>
-    </div>
 
-    <div id="show-beacons-switch">
-        <label class="checkbox">
-            <input type="checkbox" id="show-beacons-checbox">
-            Show beacons
-        </label>
-    </div>
+
 
     <div id="add-beacon-form-popup-template" class="input-group">
 
         <h2>Add Beacon </h2>
 
-        <input type="hidden" class="id"/>
+        <input type="hidden" class="id" />
 
         <input type="number" step="1" class="level col-lg-6 form-control" placeholder="level" disabled="disabled" />
 
@@ -58,10 +62,10 @@
     </div>
 
     <div id="edit-beacon-form-popup-template">
-        
+
         <h2>Edit Beacon </h2>
 
-        <input type="hidden" class="id"/>
+        <input type="hidden" class="id" />
 
         <input type="number" step="1" class="level col-lg-6 form-control" placeholder="level" disabled="disabled" />
 
@@ -98,486 +102,541 @@
 <script src='scripts/indoor1.1.0.js'></script>
 
 
-<script src='scripts/polygon.js'></script>    
+<script src='scripts/polygon.js'></script>
 <script src='scripts/indoorPolygon.js'></script>
 
 <script src='scripts/roomFeatures.js'></script>
-    
+
 <script src='scripts/indoorBootstrap.js'></script>
 <script src='scripts/indoorAdminInterface.js'></script>
 <script src='scripts/indoorFeatures.js'></script>
 
-    <script type="text/javascript">
-        
-        // ************ PRIVATE *************
+<script type="text/javascript">
 
-        var map;
+    // ************ PRIVATE *************
 
-        function go() {
-            map = L.indoor.map('map', {
-                    map: "06583882495760918064", // "scripts/Virtual-Up.json", 
-                    project: "b611982d97975bc3e9e02f88f5736d75", // "3a1a2e3979948c2732088a119debc5b4", 
-                    click: indoorMapClicked
-                },
-                null,
-                function () {
-                    var levels = map.getLevels();
-                    map.setLevel('1');
-                });
-        }
+    var map;
 
-        go();
+    function go() {
+        map = L.indoor.map('map', {
+            map: "06583882495760918064", // "scripts/Virtual-Up.json", 
+            project: "b611982d97975bc3e9e02f88f5736d75", // "3a1a2e3979948c2732088a119debc5b4", 
+            click: indoorMapClicked
+        },
+            null,
+            function () {
+                var levels = map.getLevels();
+                map.setLevel('1');
 
-
-        var storeHighlight = null;
-        var storePopup = null;
-
-        var clickedWGSLatLng = null;
-    
-        var beaconInputFormPopup = null;
-        var beaconEditFormPopup = null;
-
-
-        function indoorMapClicked(event) {
-            
-
-            map.convertLocalLatLngToWGS84(event.latLng, function (error, latLon) {
-                console.log(latLon);
-                clickedWGSLatLng = {
-                    lat: latLon.lat,
-                    lng: latLon.lon
-                };
+                for (var i = 0; i < beacons.length; i++) {
+                    var beacon = beacons[i];
+                    beacon = normalizeBeacon(beacon);
+                }
+                
             });
+    }
 
-            if ($("#right-side-menu > #add-beacons").hasClass("active")) {
-                var id = Date.now();
-            
-
-                var beaconInputFormHtml = addBeaconInputForm(id, clickedWGSLatLng.lat, clickedWGSLatLng.lng, event.latLng.level, function (beacon) {
-                    beacons.push(localizeBeacon(beacon));
-
-                    beaconInputFormPopup._close();
-
-                    if (beaconsShowing) {
-                        showBeaconMarkersOnMap();
-                    }
-
-                    beaconAdded(beacon);
-                });
-        
-                beaconInputFormPopup = L.popup().setLatLng(event.latLng).setContent(beaconInputFormHtml).addTo(map);
-            }
+    go();
 
 
-        }
+    var storeHighlight = null;
+    var storePopup = null;
+
+    var clickedWGSLatLng = null;
+
+    var beaconInputFormPopup = null;
+    var beaconEditFormPopup = null;
 
 
-        $("#show-beacons-switch").on("click", function () {
-            var checked = $("#show-beacons-checbox")[0].checked;
-            if (checked) {
-                showBeaconMarkersOnMap();
-                beaconsShowing = true;
-
-            } else {
-                hideBeaconsOnMap();
-                beaconsShowing = false;
-            }
-
-        });
+    function indoorMapClicked(event) {
 
 
-
-        var beacons = [];
-        /*
-            A standard beacon is a simple javascript object.
-
-            
-            var beacon = {
-                id: id,
-                level: level,
-                lat: lat,
-                lng: lng,
-                wgsLat: wgsLat,
-                wgsLng: wgsLng,
-                uuid: uuid,
-                major: major,
-                minor: minor,
-                name: name
+        map.convertLocalLatLngToWGS84(event.latLng, function (error, latLon) {
+            console.log(latLon);
+            clickedWGSLatLng = {
+                lat: latLon.lat,
+                lng: latLon.lon
             };
-
-            'id' - No two beacons that are ever presented on the same map can ever have the same 'id'.
-            
-            Indoor.js uses local latitude and longitude values for manipulating the map markers, hightlights, routes, ... Local latitude and longitude values have 0 values at bottom left corner of the map.
-            For permanent storage of beacons it is safer to store the global latitude and longitude values. These values are kept in 'wgsLat' and 'wgsLng' properties of a beacon (lat and lng properties are reserved for local coordinates).
-            In order to populate local lat&lng properties based on wgsLat&wgsLng values, one can always call 'beacon = localizeBeacon(beacon)'; 
-
-            
-        */
-
-        var localizingBeacon = null;
-        function localizeBeacon(beacon) {
-            beacon.lat = beacon.wgsLat;
-            beacon.lng = beacon.wgsLng;
-            localizingBeacon = beacon;
-            map.convertLatLng(beacon, function (error, latLng) {
-                localizingBeacon.lat = latLng.lat;
-                localizingBeacon.lng = latLng.lng;
-            });
-
-            return localizingBeacon;
-        }
-        
-
-        var beaconMarkers = [];
-
-        var beaconIcon = new L.Icon({
-            iconUrl: 'images/map-pin.gif',
-            iconSize: [15, 24],
-            iconAnchor: [7, 24],
-            shadowUrl: ''
         });
 
-        var beaconLevel = "0";
-        var beaconsShowing = false;
+        if ($("#right-side-menu > #add-beacons").hasClass("active")) {
+            var id = Date.now();
 
 
-        function showBeaconMarkersOnMap() {
-            hideBeaconsOnMap();
+            var beaconInputFormHtml = addBeaconInputForm(id, clickedWGSLatLng.lat, clickedWGSLatLng.lng, event.latLng.level, function (beacon) {
+                beacons.push(normalizeBeacon(beacon));
 
-            for (var i = 0; i < beacons.length; i++) {
-                var beacon = beacons[i];
-                
+                beaconInputFormPopup._close();
 
-                var beaconMarker = new L.Marker(beacon, { icon: beaconIcon });
-                beaconMarker.bindPopup(editBeaconInputForm(beacon, function (modifiedBeacon) {
-                
-                    var filteredBeacon = $.grep(beacons, function (someBeacon) {
-                        return someBeacon.id == modifiedBeacon.id;
-                    })[0];
-
-                    var index = null;
-                    if (filteredBeacon) {
-                        index = beacons.indexOf(filteredBeacon);
-                    }
-
-                
-                    if (index >= 0) {
-                        beacons.splice(index, 1, localizeBeacon(modifiedBeacon));
-                    } else {
-                        beacons.push(localizeBeacon(modifiedBeacon));
-                    }
-                
-
+                if (beaconsShowing) {
                     showBeaconMarkersOnMap();
-                    beaconUpdated(index, modifiedBeacon, filteredBeacon);
+                }
 
-                }, function (beaconToRemove) {
-                    var filteredBeacon = $.grep(beacons, function (someBeacon) {
-                        return someBeacon.id == beaconToRemove.id;
-                    })[0];
+                beaconAdded(beacon);
+            });
 
-                    var index = null;
-                    if (filteredBeacon) {
-                        index = beacons.indexOf(filteredBeacon);
-                        if (index >= 0) {
-                            beacons.splice(index, 1);
+            beaconInputFormPopup = L.popup().setLatLng(event.latLng).setContent(beaconInputFormHtml).addTo(map);
+        }
 
-                            showBeaconMarkersOnMap();
 
-                            beaconRemoved(index, beaconToRemove);
-                        }
+    }
+
+
+    $("#show-beacons-switch").on("click", function () {
+        var checked = $("#show-beacons-checbox")[0].checked;
+        if (checked) {
+            showBeaconMarkersOnMap();
+            beaconsShowing = true;
+
+        } else {
+            hideBeaconsOnMap();
+            beaconsShowing = false;
+        }
+
+    });
+
+
+
+    var beacons = [];
+    
+
+    /*
+        A standard beacon is a simple javascript object.
+
+        
+        var beacon = {
+            id: id,
+            level: level,
+            lat: lat,
+            lng: lng,
+            wgsLat: wgsLat,
+            wgsLng: wgsLng,
+            uuid: uuid,
+            major: major,
+            minor: minor,
+            name: name
+        };
+
+        'id' - No two beacons that are ever presented on the same map can ever have the same 'id'.
+        
+        Indoor.js uses local latitude and longitude values for manipulating the map markers, hightlights, routes, ... Local latitude and longitude values have 0 values at bottom left corner of the map.
+        For permanent storage of beacons it is safer to store the global latitude and longitude values. These values are kept in 'wgsLat' and 'wgsLng' properties of a beacon (lat and lng properties are reserved for local coordinates).
+        In order to populate local lat&lng properties based on wgsLat&wgsLng values, one can always call 'beacon = normalizeBeacon(beacon)'; 
+        
+    */
+
+    var normalizingBeacon = null;
+    function normalizeBeacon(beacon) {
+        if (beacon.uuid)
+            beacon.uuid = beacon.uuid.toUpperCase();
+
+        beacon.lat = beacon.wgsLat;
+        beacon.lng = beacon.wgsLng;
+        normalizingBeacon = beacon;
+        map.convertLatLng(beacon, function (error, latLng) {
+            normalizingBeacon.lat = latLng.lat;
+            normalizingBeacon.lng = latLng.lng;
+        });
+
+        return normalizingBeacon;
+    }
+
+
+    var beaconMarkers = [];
+
+    var beaconIcon = new L.Icon({
+        iconUrl: 'images/map-pin.gif',
+        iconSize: [15, 24],
+        iconAnchor: [7, 24],
+        shadowUrl: ''
+    });
+
+    var beaconLevel = "0";
+    var beaconsShowing = false;
+
+
+    function showBeaconMarkersOnMap() {
+        hideBeaconsOnMap();
+
+        for (var i = 0; i < beacons.length; i++) {
+            var beacon = beacons[i];
+
+
+            var beaconMarker = new L.Marker(beacon, { icon: beaconIcon });
+            beaconMarker.bindPopup(editBeaconInputForm(beacon, function (modifiedBeacon) {
+
+                var filteredBeacon = $.grep(beacons, function (someBeacon) {
+                    return someBeacon.id == modifiedBeacon.id;
+                })[0];
+
+                var index = null;
+                if (filteredBeacon) {
+                    index = beacons.indexOf(filteredBeacon);
+                }
+
+
+                if (index >= 0) {
+                    beacons.splice(index, 1, normalizeBeacon(modifiedBeacon));
+                } else {
+                    beacons.push(normalizeBeacon(modifiedBeacon));
+                }
+
+
+                showBeaconMarkersOnMap();
+                beaconUpdated(index, modifiedBeacon, filteredBeacon);
+
+            }, function (beaconToRemove) {
+                var filteredBeacon = $.grep(beacons, function (someBeacon) {
+                    return someBeacon.id == beaconToRemove.id;
+                })[0];
+
+                var index = null;
+                if (filteredBeacon) {
+                    index = beacons.indexOf(filteredBeacon);
+                    if (index >= 0) {
+                        beacons.splice(index, 1);
+
+                        showBeaconMarkersOnMap();
+
+                        beaconRemoved(index, beaconToRemove);
                     }
+                }
 
-                }));
-                beaconMarker.addTo(map);
+            }));
+            beaconMarker.addTo(map);
 
-                beaconMarkers.push(beaconMarker);
-            }
+            beaconMarkers.push(beaconMarker);
         }
+    }
 
-        function hideBeaconsOnMap() {
-            for (var i = 0; i < beaconMarkers.length; i++) {
-                var beaconMarker = beaconMarkers[i];
-                map.removeLayer(beaconMarker);
-            }
-            beaconMarkers = [];
+    function hideBeaconsOnMap() {
+        for (var i = 0; i < beaconMarkers.length; i++) {
+            var beaconMarker = beaconMarkers[i];
+            map.removeLayer(beaconMarker);
         }
+        beaconMarkers = [];
+    }
 
 
-
-
-
-
-        // ************ PUBLIC *************
-
-
-        function setBeacons(beaconsArray) {
-            beacons = beaconsArray;
+    function hideBeaconsOnMap() {
+        for (var i = 0; i < beaconMarkers.length; i++) {
+            var beaconMarker = beaconMarkers[i];
+            map.removeLayer(beaconMarker);
         }
+        beaconMarkers = [];
+    }
 
 
-        function highlightMyLocation(uuid, major, minor) {
-            highlightBeacon(uuid, major, minor, "#00ff00");
-        }
 
 
-        
-        var highlightTags = {};
-        var highlightedBeacon = null;
-        
-        function highlightBeacon(uuid, major, minor, tags, color) {
-            if (!color)
-                color = "#0000ff";
-
-            highlightedBeacon = $.grep(beacons, function (someBeacon) {
-                return someBeacon.uuid == uuid && someBeacon.major == major && someBeacon.minor == minor;
-            })[0];
-
-            if (!highlightedBeacon)
-                return;
 
 
-            getRoomFeaturesAtLatLng(highlightedBeacon, function (roomFeatures) {
-                var roomFeature = roomFeatures[0];
+    // ************ PUBLIC *************
 
+
+    function setBeacons(beaconsArray) {
+        beacons = beaconsArray;
+    }
+
+
+    function highlightMyLocation(uuid, major, minor) {
+        highlightBeacon(uuid, major, minor, "#00ff00");
+    }
+
+
+
+    var highlightTags = {};
+    // var highlightedBeacon = null;
+    function highlightBeacon(uuid, major, minor, tags) {
+        var beaconToHighlight = $.grep(beacons, function (someBeacon) {
+            return someBeacon.uuid == uuid && someBeacon.major == major && someBeacon.minor == minor;
+        })[0];
+
+        if (!beaconToHighlight)
+            return;
+
+        highlightBeacons([beaconToHighlight], tags);
+    }
+
+
+    function highlightBeacons(beaconsToHighlight, tags) {
+        initAllRoomFeatures(function (roomFeaturesByFeatureIds, roomFeaturesInBoxes) {
+            for (var i = 0; i < beaconsToHighlight.length; i++) {
+                var beaconToHighlight = beaconsToHighlight[i];
+
+                var encapsulatedRoomFeatures = getRoomFeaturesAtLatLng_Sync(beaconToHighlight, roomFeaturesInBoxes);
+
+                var roomFeature = encapsulatedRoomFeatures[0];
                 if (!roomFeature)
                     return;
 
 
                 var sameRoomBeacons = [];
-                for (var i = 0; i < beacons.length; i++) {
-                    var beacon = beacons[i];
-                    if (beacon.lat >= roomFeature.containerBox.minLat && beacon.lat <= roomFeature.containerBox.maxLat && beacon.lng >= roomFeature.containerBox.minLng && beacon.lng <= roomFeature.containerBox.maxLng) {
-                        sameRoomBeacons.push(beacon);
+                for (var j = 0; j < beacons.length; j++) {
+                    var otherBeacon = beacons[j];
+                    if (otherBeacon.lat >= roomFeature.containerBox.minLat && otherBeacon.lat <= roomFeature.containerBox.maxLat && otherBeacon.lng >= roomFeature.containerBox.minLng && otherBeacon.lng <= roomFeature.containerBox.maxLng) {
+                        if (isPointInsidePolygon(latlngToPoint(otherBeacon), featureToPolygon(roomFeature.feature))) {
+                            sameRoomBeacons.push(otherBeacon);
+                        }
                     }
                 }
-                
+
                 var highlight = null;
                 if (sameRoomBeacons.length == 0) {
                     // should not happen if roomFeature is not null
                 } else if (sameRoomBeacons.length == 1) {
-                    highlight = map.highlightFeatures(roomFeature.feature, { clickable: false, stroke: true, color: color, opacity: '0.3' });
+                    highlight = map.highlightFeatures(roomFeature.feature, { clickable: false, stroke: true, color: '#00ff00', opacity: '0.3' });
                 } else {
-                    
-                    var squareFeature = squareFeatureAroundLatLng(highlightedBeacon, 0.0001);
+
+                    var squareFeature = squareFeatureAroundLatLng(beaconToHighlight, 0.0001);
                     var squarePolygon = featureToPolygon(squareFeature);
                     var roomPolygon = featureToPolygon(roomFeature.feature);
-                    
+
                     var intersectingPolygon = intersectionPolygons(squarePolygon, roomPolygon);
                     var intersectingFeature = polygonToFeature(intersectingPolygon);
 
-                    highlight = map.highlightFeatures(intersectingFeature, { clickable: false, stroke: true, color: color, opacity: '0.3' });
+                    highlight = map.highlightFeatures(intersectingFeature, { clickable: false, stroke: true, color: '#0000ff', opacity: '0.3' });
+
+
 
                 }
 
                 if (highlight) {
-                    for (var i = 0; i < tags.length; i++) {
-                        var tag = tags[i];
-                        if (!highlightTags[tag])
-                            highlightTags[tag] = [];
+                    if (tags) {
+                        if (tags instanceof Array) {
+                            for (var i = 0; i < tags.length; i++) {
+                                var tag = tags[i];
+                                if (!highlightTags[tag])
+                                    highlightTags[tag] = [];
 
-                        highlightTags[tag].push(highlight);
+                                highlightTags[tag].push(highlight);
+                            }
+                        } else {
+                            if (!highlightTags[tags])
+                                highlightTags[tags] = [];
+
+                            highlightTags[tags].push(highlight);
+                        }
+                    } else {
+                        if (!highlightTags['untagged'])
+                            highlightTags['untagged'] = [];
+
+                        highlightTags['untagged'].push(highlight);
                     }
                 }
-                
-            });
-        }
-        
-        function removeHighlightsByTag(tag) {
-            var highlights = highlightTags[tag];
-            if (!highlights)
-                return;
 
+            }
+        });
+    }
+    
+
+    function removeAllHighlights() {
+        removeHighlightsByTag();
+    }
+
+    function removeHighlightsByTag(tag) {
+        if (tag) {
+            var highlights = highlightTags[tag];
             for (var i = 0; i < highlights.length; i++) {
                 var highlight = highlights[i];
                 map.clearHighlight(highlight);
             }
+        } else {
+            for (var highlightsTag in highlightTags) {
+                highlights = highlightTags[highlightsTag];
+                for (var i = 0; i < highlights.length; i++) {
+                    var highlight = highlights[i];
+                    map.clearHighlight(highlight);
+                }
+
+            }
         }
+    }
 
 
 
-        // ******** ROUTING **********
+    // ******** ROUTING **********
 
-        function showRouteBetweenBeacons(uuid, majorFrom, minorFrom, majorTo, minorTo, animate) {
-            removeHighlightsByTag("route");
-            
+    function showRouteBetweenBeacons(uuid, majorFrom, minorFrom, majorTo, minorTo, animate) {
+        removeHighlightsByTag("route");
 
-            var beaconFrom = $.grep(beacons, function(someBeacon) {
-                return someBeacon.uuid == uuid && someBeacon.major == majorFrom && someBeacon.minor == minorFrom;
-            })[0];
 
-            if (!beaconFrom)
-                return;
-            
-            var beaconTo = $.grep(beacons, function (someBeacon) {
-                return someBeacon.uuid == uuid && someBeacon.major == majorTo && someBeacon.minor == minorTo;
-            })[0];
+        var beaconFrom = $.grep(beacons, function (someBeacon) {
+            return someBeacon.uuid == uuid && someBeacon.major == majorFrom && someBeacon.minor == minorFrom;
+        })[0];
 
-            if (!beaconTo)
-                return;
+        if (!beaconFrom)
+            return;
 
-            highlightBeacon(uuid, majorFrom, minorFrom, ["route"]);
-            highlightBeacon(uuid, majorTo, minorTo, ["route"]);
+        var beaconTo = $.grep(beacons, function (someBeacon) {
+            return someBeacon.uuid == uuid && someBeacon.major == majorTo && someBeacon.minor == minorTo;
+        })[0];
 
-            showRoute(beaconFrom, beaconTo, animate);
-        }
+        if (!beaconTo)
+            return;
 
-        var lastRoute = null;
-        function showRoute(latLngFrom, latLngTo, animate) {
-            var spinner = new L.Marker(
-              new L.LatLng(latLngTo.lat, latLngTo.lng), {
-                  icon: new L.Icon({
-                      iconUrl: 'images/spinner.gif',
-                      iconAnchor: [20, 20],
-                      className: 'L_indoor_spinner'
-                  })
+        highlightBeacon(uuid, majorFrom, minorFrom, ["route"]);
+        highlightBeacon(uuid, majorTo, minorTo, ["route"]);
+
+        showRoute(beaconFrom, beaconTo, animate);
+    }
+
+    var lastRoute = null;
+    function showRoute(latLngFrom, latLngTo, animate) {
+        var spinner = new L.Marker(
+          new L.LatLng(latLngTo.lat, latLngTo.lng), {
+              icon: new L.Icon({
+                  iconUrl: 'images/spinner.gif',
+                  iconAnchor: [20, 20],
+                  className: 'L_indoor_spinner'
               })
-              .addTo(map);
-            // we like white circles with a shadow
-            $('.L_indoor_spinner')
-              .css('box-shadow', '0px 0px 10px white')
-              .css('padding-right', '2px')
-              .css('background', 'white')
-              .css('border-radius', '20px');
+          })
+          .addTo(map);
+        // we like white circles with a shadow
+        $('.L_indoor_spinner')
+          .css('box-shadow', '0px 0px 10px white')
+          .css('padding-right', '2px')
+          .css('background', 'white')
+          .css('border-radius', '20px');
 
-            // let's define our destination 
-            // var latLng = new L.indoor.latLng(lat, lng, map.getLevel());
-            map.getRoute(latLngFrom, latLngTo, function (error, route) {
-                if (error || route.length == 0) {
-                    map.removeLayer(spinner);
-                    alert('Route calculation was unsuccessful');
-                } else {
-                    map.removeLayer(spinner);
-                    if (lastRoute) map.hideRoute(lastRoute);
-                    lastRoute = map.showRoute(route, {
-                        startIcon: null,
-                        endIcon: new L.Icon.Default(),
-                        animate: false,
-                        animateIcon: new L.Icon.Default(),
-                        lineOptions: { color: '#000033', opacity: 1, dashArray: '5,1', weight: 5 }
-                    });
-                    
-                    if (animate) {
-                        animateRoute({
-                            data: route,
-                            options: {
-                                animateIcon: new L.Icon.Default()
-                            }
-                        });
-                    }
-                    
-                }
-            });
-        }
-        
-        function removeRoute() {
-            if (lastRoute) map.hideRoute(lastRoute);
-        }
-        
-        function animateRoute(route) {
-            if (route.data.length == 0) return;
-            if (!route.options.animateIcon) route.options.animateIcon = new L.divIcon({ html: 'X' });
-            if (!route.status) route.status = {};
-            if (!route.headMarker && route.data.length > 0) {
-                route.headMarker = new L.marker(new L.LatLng(route.data[0].lat, route.data[0].lng), { icon: route.options.animateIcon });
-            }
-
-            if (route.status.animationProgress == undefined) route.status.animationProgress = 0;
-
-            // IF the route steps have not been calculated yet
-            if (!route.totalLength) {
-                // THEN calculate the route steps, only once for each route
-                route.totalLength = 0;
-
-                var lats = [];
-                var lons = [];
-
-                for (var p = 0; p < route.data.length - 1; p++) {
-                    route.data[p].distanceToNext = Math.sqrt(Math.pow(route.data[p].lat - route.data[p + 1].lat, 2) + Math.pow(route.data[p].lng - route.data[p + 1].lng, 2));
-                    route.data[p].totalDistanceToThis = route.totalLength;
-                    route.totalLength += route.data[p].distanceToNext;
-                    lats.push(route.data[p].lat);
-                    lons.push(route.data[p].lng);
-                }
-                lats.push(route.data[route.data.length - 1].lat);
-                lons.push(route.data[route.data.length - 1].lng);
-
-                var bbox = {
-                    minlon: Math.min.apply(null, lons),
-                    minlat: Math.min.apply(null, lats),
-                    maxlon: Math.max.apply(null, lons),
-                    maxlat: Math.max.apply(null, lats)
-                };
-                map.fitBounds([[bbox.minlat, bbox.minlon], [bbox.maxlat, bbox.maxlon]], new L.Point(80, 70));
-
-                route.data[route.data.length - 1].totalDistanceToThis = route.totalLength;
-                route.data[route.data.length - 1].distanceToNext = -1;
-
-                var refDistance = 0.0001640361071184976;
-                var refCount = 60;
-                route.status.animationMax = route.totalLength / refDistance * refCount;
-
-                route.animationPoints = [];
-                var animationUnit = route.totalLength / (route.status.animationMax - 1);
-
-                for (var i = 0; i < route.status.animationMax; i++) {
-                    var ometer = i * animationUnit;
-                    var previousPoint = route.data[0];
-                    var nextPoint = route.data[0];
-                    for (var p = 0; p < route.data.length - 1 && route.data[p].totalDistanceToThis < ometer; p++) {
-                        previousPoint = nextPoint;
-                        nextPoint = route.data[p + 1];
-                    }
-
-                    if (previousPoint == nextPoint)
-                        route.animationPoints.push(previousPoint);
-                    else {
-                        var distanceLeft = ometer - previousPoint.totalDistanceToThis;
-                        var relDistance = distanceLeft / previousPoint.distanceToNext;
-                        route.animationPoints.push({ lat: previousPoint.lat + relDistance * (nextPoint.lat - previousPoint.lat), lng: previousPoint.lng + relDistance * (nextPoint.lng - previousPoint.lng), level: previousPoint.level });
-                    }
-                }
-            }
-
-            var levelChangeDelay = 1000;
-            var levelChangeFactor = 0;
-            if (route.status.animationProgress >= route.status.animationMax) {
-                route.animationComplete = true;
-                route.status.animationProgress = undefined;
-                if (map.hasLayer(route.headMarker))
-                    map.removeLayer(route.headMarker);
+        // let's define our destination 
+        // var latLng = new L.indoor.latLng(lat, lng, map.getLevel());
+        map.getRoute(latLngFrom, latLngTo, function (error, route) {
+            if (error || route.length == 0) {
+                map.removeLayer(spinner);
+                alert('Route calculation was unsuccessful');
             } else {
-                // animation here
-                if (!map.hasLayer(route.headMarker)) map.addLayer(route.headMarker);
-                var latLng = new L.LatLng(route.animationPoints[route.status.animationProgress].lat, route.animationPoints[route.status.animationProgress].lng);
-                route.headMarker.setLatLng(latLng);
-                if (map.getLevel() != route.animationPoints[route.status.animationProgress].level) {
-                    map.setLevel(route.animationPoints[route.status.animationProgress].level);
-                    levelChangeFactor = 1;
+                map.removeLayer(spinner);
+                if (lastRoute) map.hideRoute(lastRoute);
+                lastRoute = map.showRoute(route, {
+                    startIcon: null,
+                    endIcon: new L.Icon.Default(),
+                    animate: false,
+                    animateIcon: new L.Icon.Default(),
+                    lineOptions: { color: '#000033', opacity: 1, dashArray: '5,1', weight: 5 }
+                });
+
+                if (animate) {
+                    animateRoute({
+                        data: route,
+                        options: {
+                            animateIcon: new L.Icon.Default()
+                        }
+                    });
+                }
+
+            }
+        });
+    }
+
+    function removeRoute() {
+        if (lastRoute) map.hideRoute(lastRoute);
+    }
+
+    function animateRoute(route) {
+        if (route.data.length == 0) return;
+        if (!route.options.animateIcon) route.options.animateIcon = new L.divIcon({ html: 'X' });
+        if (!route.status) route.status = {};
+        if (!route.headMarker && route.data.length > 0) {
+            route.headMarker = new L.marker(new L.LatLng(route.data[0].lat, route.data[0].lng), { icon: route.options.animateIcon });
+        }
+
+        if (route.status.animationProgress == undefined) route.status.animationProgress = 0;
+
+        // IF the route steps have not been calculated yet
+        if (!route.totalLength) {
+            // THEN calculate the route steps, only once for each route
+            route.totalLength = 0;
+
+            var lats = [];
+            var lons = [];
+
+            for (var p = 0; p < route.data.length - 1; p++) {
+                route.data[p].distanceToNext = Math.sqrt(Math.pow(route.data[p].lat - route.data[p + 1].lat, 2) + Math.pow(route.data[p].lng - route.data[p + 1].lng, 2));
+                route.data[p].totalDistanceToThis = route.totalLength;
+                route.totalLength += route.data[p].distanceToNext;
+                lats.push(route.data[p].lat);
+                lons.push(route.data[p].lng);
+            }
+            lats.push(route.data[route.data.length - 1].lat);
+            lons.push(route.data[route.data.length - 1].lng);
+
+            var bbox = {
+                minlon: Math.min.apply(null, lons),
+                minlat: Math.min.apply(null, lats),
+                maxlon: Math.max.apply(null, lons),
+                maxlat: Math.max.apply(null, lats)
+            };
+            map.fitBounds([[bbox.minlat, bbox.minlon], [bbox.maxlat, bbox.maxlon]], new L.Point(80, 70));
+
+            route.data[route.data.length - 1].totalDistanceToThis = route.totalLength;
+            route.data[route.data.length - 1].distanceToNext = -1;
+
+            var refDistance = 0.0001640361071184976;
+            var refCount = 60;
+            route.status.animationMax = route.totalLength / refDistance * refCount;
+
+            route.animationPoints = [];
+            var animationUnit = route.totalLength / (route.status.animationMax - 1);
+
+            for (var i = 0; i < route.status.animationMax; i++) {
+                var ometer = i * animationUnit;
+                var previousPoint = route.data[0];
+                var nextPoint = route.data[0];
+                for (var p = 0; p < route.data.length - 1 && route.data[p].totalDistanceToThis < ometer; p++) {
+                    previousPoint = nextPoint;
+                    nextPoint = route.data[p + 1];
+                }
+
+                if (previousPoint == nextPoint)
+                    route.animationPoints.push(previousPoint);
+                else {
+                    var distanceLeft = ometer - previousPoint.totalDistanceToThis;
+                    var relDistance = distanceLeft / previousPoint.distanceToNext;
+                    route.animationPoints.push({ lat: previousPoint.lat + relDistance * (nextPoint.lat - previousPoint.lat), lng: previousPoint.lng + relDistance * (nextPoint.lng - previousPoint.lng), level: previousPoint.level });
                 }
             }
+        }
 
-            if (!route.animationComplete) {
-                route.status.animationProgress = Math.min(route.status.animationProgress + 1, route.status.animationMax);
-                setTimeout(function () { animateRoute(route); }, 1000 / 15 + levelChangeDelay * levelChangeFactor);
+        var levelChangeDelay = 1000;
+        var levelChangeFactor = 0;
+        if (route.status.animationProgress >= route.status.animationMax) {
+            route.animationComplete = true;
+            route.status.animationProgress = undefined;
+            if (map.hasLayer(route.headMarker))
+                map.removeLayer(route.headMarker);
+        } else {
+            // animation here
+            if (!map.hasLayer(route.headMarker)) map.addLayer(route.headMarker);
+            var latLng = new L.LatLng(route.animationPoints[route.status.animationProgress].lat, route.animationPoints[route.status.animationProgress].lng);
+            route.headMarker.setLatLng(latLng);
+            if (map.getLevel() != route.animationPoints[route.status.animationProgress].level) {
+                map.setLevel(route.animationPoints[route.status.animationProgress].level);
+                levelChangeFactor = 1;
             }
         }
 
-
-
-        // ******** NOTIFICATIONS *********
-        function beaconAdded(beacon) {
-            // this function gets called when a new beacon is added
+        if (!route.animationComplete) {
+            route.status.animationProgress = Math.min(route.status.animationProgress + 1, route.status.animationMax);
+            setTimeout(function () { animateRoute(route); }, 1000 / 15 + levelChangeDelay * levelChangeFactor);
         }
-    
-        function beaconUpdated(index, beaconNew, beaconOld) {
-            // this function gets called when an existing beacon's data gets modified
-        }
+    }
 
-        function beaconRemoved(index, beacon) {
-            // this function gets called when an existing beacon gets removed
-        }
 
-    </script>
+
+    // ******** NOTIFICATIONS *********
+    function beaconAdded(beacon) {
+        // this function gets called when a new beacon is added
+    }
+
+    function beaconUpdated(index, beaconNew, beaconOld) {
+        // this function gets called when an existing beacon's data gets modified
+    }
+
+    function beaconRemoved(index, beacon) {
+        // this function gets called when an existing beacon gets removed
+    }
+
+</script>
 
 </html>
