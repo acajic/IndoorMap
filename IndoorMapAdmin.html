@@ -1,19 +1,24 @@
 <html>
 
-
 <head>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
-
     <link href='http://indoor.io/indoor.js/1.1.0/js/mapbox/mapbox.css' rel='stylesheet' />
-    <link rel="stylesheet" href="mapbox.css" />
-
-    <link rel="stylesheet" href="IndoorMapAdmin.css" />
-
+    <link rel="stylesheet" href="skin/mapbox.css" />
+    <link rel="stylesheet" href="skin/IndoorMapAdmin.css" />
+    <script src='http://indoor.io/indoor.js/1.1.0/js/jquery-1.9.1.min.js'> </script>
+    <script src='http://code.jquery.com/ui/jquery-ui-git.js'> </script>
+    <script src='js/indoor1.1.0.mapbox.js'></script>
+    <script src='js/indoor1.1.0.js'></script>
+    <script src='js/polygon.js'></script>
+    <script src='js/indoorPolygon.js'></script>
+    <script src='js/roomFeatures.js'></script>
+    <script src='js/indoorBootstrap.js'></script>
+    <script src='js/indoorAdminInterface.js'></script>
+    <script src='js/indoorFeatures.js'></script>
 </head>
 
 <body>
-    <div id="map" style="width: 100%; height: 100%;">
-
+    <div id="map" style="width: 500px; height: 750px;">
         <div id="show-beacons-switch">
             <label class="checkbox">
                 <input type="checkbox" id="show-beacons-checbox">
@@ -30,86 +35,35 @@
         </div>
     </div>
 
-
-
-
-
-
     <div id="add-beacon-form-popup-template" class="input-group">
-
         <h2>Add Beacon </h2>
-
         <input type="hidden" class="id" />
-
         <input type="number" step="1" class="level col-lg-6 form-control" placeholder="level" disabled="disabled" />
-
-
         <input type="number" step="0.0000001" class="latitude form-control" placeholder="latitude">
-
         <input type="number" step="0.0000001" class="longitude form-control" placeholder="longitude">
-
         <input type="text" class="uuid form-control" placeholder="UUID" />
-
         <input type="number" step="1" class="major form-control" placeholder="major" />
-
         <input type="number" step="1" class="minor form-control" placeholder="minor" />
-
         <input type="text" class="name form-control" placeholder="name" />
-
-
         <button id="submit-button" class="btn btn-default" type="button">Add</button>
-
     </div>
 
     <div id="edit-beacon-form-popup-template">
-
         <h2>Edit Beacon </h2>
-
         <input type="hidden" class="id" />
-
         <input type="number" step="1" class="level col-lg-6 form-control" placeholder="level" disabled="disabled" />
-
-
         <input type="number" step="0.0000001" class="latitude form-control" placeholder="latitude">
-
         <input type="number" step="0.0000001" class="longitude form-control" placeholder="longitude">
-
         <input type="text" class="uuid form-control" placeholder="UUID" />
-
         <input type="number" step="1" class="major form-control" placeholder="major" />
-
         <input type="number" step="1" class="minor form-control" placeholder="minor" />
-
         <input type="text" class="name form-control" placeholder="name" />
-
 
         <button id="submit-button" class="btn btn-default" type="button">Edit</button>
         <button id="remove-button" class="btn btn-default" type="button">Remove</button>
-
     </div>
 
-
 </body>
-
-
-<script src='http://indoor.io/indoor.js/1.1.0/js/jquery-1.9.1.min.js'> </script>
-<script src='http://code.jquery.com/ui/jquery-ui-git.js'> </script>
-
-
-
-
-<script src='scripts/indoor1.1.0.mapbox.js'></script>
-<script src='scripts/indoor1.1.0.js'></script>
-
-
-<script src='scripts/polygon.js'></script>
-<script src='scripts/indoorPolygon.js'></script>
-
-<script src='scripts/roomFeatures.js'></script>
-
-<script src='scripts/indoorBootstrap.js'></script>
-<script src='scripts/indoorAdminInterface.js'></script>
-<script src='scripts/indoorFeatures.js'></script>
 
 <script type="text/javascript">
 
