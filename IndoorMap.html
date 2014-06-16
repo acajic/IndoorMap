@@ -464,6 +464,9 @@
         function removeHighlightsByTag(tag) {
             if (tag) {
                 var highlights = highlightTags[tag];
+                if (!highlights)
+                    return;
+
                 for (var i = 0; i < highlights.length; i++) {
                     var highlight = highlights[i];
                     map.clearHighlight(highlight);
@@ -477,6 +480,173 @@
                     }
 
                 }
+            }
+        }
+        
+        // ******** ROUTING **********
+
+        function showRouteBetweenBeacons(uuid, majorFrom, minorFrom, majorTo, minorTo, animate) {
+            removeHighlightsByTag("route");
+
+
+            var beaconFrom = $.grep(beacons, function (someBeacon) {
+                return someBeacon.uuid == uuid && someBeacon.major == majorFrom && someBeacon.minor == minorFrom;
+            })[0];
+
+            if (!beaconFrom)
+                return;
+
+            var beaconTo = $.grep(beacons, function (someBeacon) {
+                return someBeacon.uuid == uuid && someBeacon.major == majorTo && someBeacon.minor == minorTo;
+            })[0];
+
+            if (!beaconTo)
+                return;
+
+            highlightBeacon(uuid, majorFrom, minorFrom, ["route"]);
+            highlightBeacon(uuid, majorTo, minorTo, ["route"]);
+
+            showRoute(beaconFrom, beaconTo, animate);
+        }
+
+        var lastRoute = null;
+        function showRoute(latLngFrom, latLngTo, animate) {
+            var spinner = new L.Marker(
+              new L.LatLng(latLngTo.lat, latLngTo.lng), {
+                  icon: new L.Icon({
+                      iconUrl: 'images/spinner.gif',
+                      iconAnchor: [20, 20],
+                      className: 'L_indoor_spinner'
+                  })
+              })
+              .addTo(map);
+            // we like white circles with a shadow
+            $('.L_indoor_spinner')
+              .css('box-shadow', '0px 0px 10px white')
+              .css('padding-right', '2px')
+              .css('background', 'white')
+              .css('border-radius', '20px');
+
+            // let's define our destination 
+            // var latLng = new L.indoor.latLng(lat, lng, map.getLevel());
+            map.getRoute(latLngFrom, latLngTo, function (error, route) {
+                if (error || route.length == 0) {
+                    map.removeLayer(spinner);
+                    alert('Route calculation was unsuccessful');
+                } else {
+                    map.removeLayer(spinner);
+                    if (lastRoute) map.hideRoute(lastRoute);
+                    lastRoute = map.showRoute(route, {
+                        startIcon: null,
+                        endIcon: new L.Icon.Default(),
+                        animate: false,
+                        animateIcon: new L.Icon.Default(),
+                        lineOptions: { color: '#000033', opacity: 1, dashArray: '5,1', weight: 5 }
+                    });
+
+                    if (animate) {
+                        animateRoute({
+                            data: route,
+                            options: {
+                                animateIcon: new L.Icon.Default()
+                            }
+                        });
+                    }
+
+                }
+            });
+        }
+
+        function removeRoute() {
+            if (lastRoute) map.hideRoute(lastRoute);
+        }
+
+        function animateRoute(route) {
+            if (route.data.length == 0) return;
+            if (!route.options.animateIcon) route.options.animateIcon = new L.divIcon({ html: 'X' });
+            if (!route.status) route.status = {};
+            if (!route.headMarker && route.data.length > 0) {
+                route.headMarker = new L.marker(new L.LatLng(route.data[0].lat, route.data[0].lng), { icon: route.options.animateIcon });
+            }
+
+            if (route.status.animationProgress == undefined) route.status.animationProgress = 0;
+
+            // IF the route steps have not been calculated yet
+            if (!route.totalLength) {
+                // THEN calculate the route steps, only once for each route
+                route.totalLength = 0;
+
+                var lats = [];
+                var lons = [];
+
+                for (var p = 0; p < route.data.length - 1; p++) {
+                    route.data[p].distanceToNext = Math.sqrt(Math.pow(route.data[p].lat - route.data[p + 1].lat, 2) + Math.pow(route.data[p].lng - route.data[p + 1].lng, 2));
+                    route.data[p].totalDistanceToThis = route.totalLength;
+                    route.totalLength += route.data[p].distanceToNext;
+                    lats.push(route.data[p].lat);
+                    lons.push(route.data[p].lng);
+                }
+                lats.push(route.data[route.data.length - 1].lat);
+                lons.push(route.data[route.data.length - 1].lng);
+
+                var bbox = {
+                    minlon: Math.min.apply(null, lons),
+                    minlat: Math.min.apply(null, lats),
+                    maxlon: Math.max.apply(null, lons),
+                    maxlat: Math.max.apply(null, lats)
+                };
+                map.fitBounds([[bbox.minlat, bbox.minlon], [bbox.maxlat, bbox.maxlon]], new L.Point(80, 70));
+
+                route.data[route.data.length - 1].totalDistanceToThis = route.totalLength;
+                route.data[route.data.length - 1].distanceToNext = -1;
+
+                var refDistance = 0.0001640361071184976;
+                var refCount = 60;
+                route.status.animationMax = route.totalLength / refDistance * refCount;
+
+                route.animationPoints = [];
+                var animationUnit = route.totalLength / (route.status.animationMax - 1);
+
+                for (var i = 0; i < route.status.animationMax; i++) {
+                    var ometer = i * animationUnit;
+                    var previousPoint = route.data[0];
+                    var nextPoint = route.data[0];
+                    for (var p = 0; p < route.data.length - 1 && route.data[p].totalDistanceToThis < ometer; p++) {
+                        previousPoint = nextPoint;
+                        nextPoint = route.data[p + 1];
+                    }
+
+                    if (previousPoint == nextPoint)
+                        route.animationPoints.push(previousPoint);
+                    else {
+                        var distanceLeft = ometer - previousPoint.totalDistanceToThis;
+                        var relDistance = distanceLeft / previousPoint.distanceToNext;
+                        route.animationPoints.push({ lat: previousPoint.lat + relDistance * (nextPoint.lat - previousPoint.lat), lng: previousPoint.lng + relDistance * (nextPoint.lng - previousPoint.lng), level: previousPoint.level });
+                    }
+                }
+            }
+
+            var levelChangeDelay = 1000;
+            var levelChangeFactor = 0;
+            if (route.status.animationProgress >= route.status.animationMax) {
+                route.animationComplete = true;
+                route.status.animationProgress = undefined;
+                if (map.hasLayer(route.headMarker))
+                    map.removeLayer(route.headMarker);
+            } else {
+                // animation here
+                if (!map.hasLayer(route.headMarker)) map.addLayer(route.headMarker);
+                var latLng = new L.LatLng(route.animationPoints[route.status.animationProgress].lat, route.animationPoints[route.status.animationProgress].lng);
+                route.headMarker.setLatLng(latLng);
+                if (map.getLevel() != route.animationPoints[route.status.animationProgress].level) {
+                    map.setLevel(route.animationPoints[route.status.animationProgress].level);
+                    levelChangeFactor = 1;
+                }
+            }
+
+            if (!route.animationComplete) {
+                route.status.animationProgress = Math.min(route.status.animationProgress + 1, route.status.animationMax);
+                setTimeout(function () { animateRoute(route); }, 1000 / 15 + levelChangeDelay * levelChangeFactor);
             }
         }
 
