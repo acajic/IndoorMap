@@ -238,11 +238,24 @@ function clockwisePolygon(polygon) {
             filterDuplicates.push(currentPoint);
             reversedPolygon.splice(0, 0, currentPoint);
         }
+
+        if (filterDuplicates.length > 2) {
+            var lastPoint1 = filterDuplicates[filterDuplicates.length - 1];
+            var lastPoint2 = filterDuplicates[filterDuplicates.length - 2];
+            var lastPoint3 = filterDuplicates[filterDuplicates.length - 3];
+
+            var onSameLine = pointsOnSameLine([lastPoint1, lastPoint2, lastPoint3]);
+            if (onSameLine) {
+                filterDuplicates.splice(filterDuplicates.length - 2, 1);
+                reversedPolygon.splice(1, 1);
+            }
+        }
+
         sum += (nextPoint.x - currentPoint.x) * (nextPoint.y + currentPoint.y);
     }
     if (sum > 0) {
         // polygon is clockwise
-        return polygon;
+        return filterDuplicates;
     } else {
         // polygon is counter-clockwise
         return reversedPolygon;
@@ -365,6 +378,28 @@ function pointsEqual(point1, point2) {
         return false;
     // return point1.x == point2.x && point1.y == point2.y;
     return numbersEqual(pointsDistance(point1, point2), 0);
+}
+
+function pointsOnSameLine(points) {
+    if (points.length < 3)
+        return true;
+
+    var pointFirst = points[0];
+    var pointLast = points[points.length - 1];
+    
+
+    for (var i = 1; i < points.length-1; i++) {
+        var examiningPoint = points[i];
+        var onSameLine = collinear(pointFirst.x, pointFirst.y, pointLast.x, pointLast.y, examiningPoint.x, examiningPoint.y);
+        if (!onSameLine)
+            return false;
+    }
+
+    return true;
+}
+
+function collinear(x1, y1, x2, y2, x3, y3) {
+    return Math.abs((y1 - y2) * (x1 - x3) - (y1 - y3) * (x1 - x2)) < 1e-14;
 }
 
 function numbersEqual(num1, num2) {

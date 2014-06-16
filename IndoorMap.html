@@ -55,6 +55,72 @@
                         beacon = normalizeBeacon(beacon);
                     }
 
+                    /*
+                    var polygon1 = [
+                        {
+                            x: 0.0001,
+                            y: 0.0001
+                        },
+                        {
+                            x: 0.0003,
+                            y: 0.0001
+                        },
+                        {
+                            x: 0.0003,
+                            y: 0.0002
+                        },
+                        {
+                            x: 0.0002,
+                            y: 0.0002
+                        },
+                        {
+                            x: 0.0003,
+                            y: 0.0002
+                        },
+                        {
+                            x: 0.0003,
+                            y: 0.00023
+                        },
+                        {
+                            x: 0.0002,
+                            y: 0.00023
+                        },
+                        {
+                            x: 0.0003,
+                            y: 0.00023
+                        },
+                        {
+                            x: 0.0003,
+                            y: 0.0003
+                        },
+                        {
+                            x: 0.0001,
+                            y: 0.0003
+                        }
+                    ];
+                    
+                    var feature1 = polygonToFeature(polygon1);
+                    var highlight1 = map.highlightFeatures(feature1, { clickable: false, stroke: true, color: '#00ffff', opacity: '0.3' });
+
+
+                    var polygon2 = [
+                        { x: 0.00025, y: 0.00025 },
+                        { x: 0.0002, y: 0.00022 },
+                        { x: 0.00025, y: 0.00013 },
+                        { x: 0.00027, y: 0.00024 }
+                    ];
+
+                    var intersectingPolygon = intersectionPolygons(polygon1, polygon2);
+                    var feature = polygonToFeature(intersectingPolygon);
+                    var highlight = map.highlightFeatures(feature, { clickable: false, stroke: true, color: '#0000ff', opacity: '0.3' });
+
+                    if (!highlightTags['untagged'])
+                        highlightTags['untagged'] = [];
+
+                    highlightTags['untagged'].push(highlight1);
+                    highlightTags['untagged'].push(highlight);
+                    */
+
                 });
         }
 
@@ -302,7 +368,8 @@
         
         var highlightTags = {};
         // var highlightedBeacon = null;
-        function highlightBeacon(uuid, major, minor, tags) {
+        
+        function highlightBeacon(uuid, major, minor, tags, highlightSquareSize) {
             var beaconToHighlight = $.grep(beacons, function (someBeacon) {
                 return someBeacon.uuid == uuid && someBeacon.major == major && someBeacon.minor == minor;
             })[0];
@@ -310,10 +377,15 @@
             if (!beaconToHighlight)
                 return;
 
-            highlightBeacons([beaconToHighlight], tags);
+            highlightBeacons([beaconToHighlight], tags, highlightSquareSize);
         }
 
-        function highlightBeacons(beaconsToHighlight, tags) {
+        function highlightBeacons(beaconsToHighlight, tags, highlightSquareSize) {
+            if (!highlightSquareSize)
+                highlightSquareSize = 15;
+
+            highlightSquareSize *= 0.000009;
+
             initAllRoomFeatures(function(roomFeaturesByFeatureIds, roomFeaturesInBoxes) {
                 for (var i = 0; i < beaconsToHighlight.length; i++) {
                     var beaconToHighlight = beaconsToHighlight[i];
@@ -342,10 +414,10 @@
                         highlight = map.highlightFeatures(roomFeature.feature, { clickable: false, stroke: true, color: '#00ff00', opacity: '0.3' });
                     } else {
 
-                        var squareFeature = squareFeatureAroundLatLng(beaconToHighlight, 0.0001);
+                        var squareFeature = squareFeatureAroundLatLng(beaconToHighlight, highlightSquareSize);
                         var squarePolygon = featureToPolygon(squareFeature);
                         var roomPolygon = featureToPolygon(roomFeature.feature);
-
+                        
                         var intersectingPolygon = intersectionPolygons(squarePolygon, roomPolygon);
                         var intersectingFeature = polygonToFeature(intersectingPolygon);
 
