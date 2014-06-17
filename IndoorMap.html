@@ -42,7 +42,7 @@
         function go() {
             map = L.indoor.map('map', {
                     map: "06583882495760918064", // "scripts/Virtual-Up.json", //
-                    project: "b611982d97975bc3e9e02f88f5736d75",// "3a1a2e3979948c2732088a119debc5b4",
+                    project: "9b366bbcad7ee96c0b7d510826bd0b46",    // "b611982d97975bc3e9e02f88f5736d75",// "3a1a2e3979948c2732088a119debc5b4",
                     click: indoorMapClicked
                 },
                 null,
@@ -245,8 +245,8 @@
             minor: "1",
             name: "Bausov stol",
             uuid: "01122334-4556-6778-899a-abbccddeeff0",
-            wgsLat: "45.80122906884382",
-            wgsLng: "15.930515515057436"
+            wgsLat: "45.80124006884382",
+            wgsLng: "15.930525515057436"
         }, {
             id: "1402585136948",
             lat: 0.00016562640670336225,
@@ -256,8 +256,8 @@
             minor: "180",
             name: "Kuhinja",
             uuid: "01122334-4556-6778-899a-abbccddeeff0",
-            wgsLat: "45.80129584738079",
-            wgsLng: "15.93063014325624"
+            wgsLat: "45.80129784738079",
+            wgsLng: "15.93063614325624"
         }, {
             id: "1402585198337",
             lat: 0.00015422701835950535,
@@ -267,8 +267,8 @@
             minor: "120",
             name: "Crvena kutija",
             uuid: "01122334-4556-6778-899a-abbccddeeff0",
-            wgsLat: "45.80129861158295",
-            wgsLng: "15.93089542447049"
+            wgsLat: "45.80130661158295",
+            wgsLng: "15.93090542447049"
         }
         ];
 
@@ -355,6 +355,16 @@
 
         // ************ PUBLIC *************
 
+        /**
+        Returns array<string> with names of levels.
+        */
+        function getLevels() {
+            return map.getLevels();
+        }
+        
+        function setLevel(level) {
+            return map.setLevel(level);
+        }
 
         function setBeacons(beaconsArray) {
             beacons = [];
