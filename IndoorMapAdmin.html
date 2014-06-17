@@ -272,19 +272,6 @@
     }
 
 
-    function hideBeaconsOnMap() {
-        for (var i = 0; i < beaconMarkers.length; i++) {
-            var beaconMarker = beaconMarkers[i];
-            map.removeLayer(beaconMarker);
-        }
-        beaconMarkers = [];
-    }
-
-
-
-
-
-
     // ************ PUBLIC *************
 
 
@@ -354,7 +341,7 @@
                     var roomPolygon = featureToPolygon(roomFeature.feature);
 
                     var intersectingPolygon = intersectionPolygons(squarePolygon, roomPolygon);
-                    var intersectingFeature = polygonToFeature(intersectingPolygon);
+                    var intersectingFeature = polygonToFeature(intersectingPolygon, roomFeature.feature.levelIndex);
 
                     highlight = map.highlightFeatures(intersectingFeature, { clickable: false, stroke: true, color: '#0000ff', opacity: '0.3' });
 
