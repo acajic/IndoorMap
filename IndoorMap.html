@@ -338,43 +338,6 @@
 
 
                 var beaconMarker = new L.Marker(beacon, { icon: beaconIcon });
-                beaconMarker.bindPopup(editBeaconInputForm(beacon, function (modifiedBeacon) {
-
-                    var filteredBeacon = $.grep(beacons, function (someBeacon) {
-                        return someBeacon.id == modifiedBeacon.id;
-                    })[0];
-
-                    var index = null;
-                    if (filteredBeacon) {
-                        index = beacons.indexOf(filteredBeacon);
-                    }
-
-
-                    if (index >= 0) {
-                        beacons.splice(index, 1, normalizeBeacon(modifiedBeacon));
-                    } else {
-                        beacons.push(normalizeBeacon(modifiedBeacon));
-                    }
-
-
-                    showBeaconMarkersOnMap();
-
-                }, function (beaconToRemove) {
-                    var filteredBeacon = $.grep(beacons, function (someBeacon) {
-                        return someBeacon.id == beaconToRemove.id;
-                    })[0];
-
-                    var index = null;
-                    if (filteredBeacon) {
-                        index = beacons.indexOf(filteredBeacon);
-                        if (index >= 0) {
-                            beacons.splice(index, 1);
-
-                            showBeaconMarkersOnMap();
-                        }
-                    }
-
-                }));
                 beaconMarker.addTo(map);
 
                 beaconMarkers.push(beaconMarker);
