@@ -8,7 +8,7 @@ function featureToPolygon(feature) {
     return polygon;
 }
 
-function polygonToFeature(polygon) {
+function polygonToFeature(polygon, levelIndex) {
     return {
         geometry: {
             type: "Polygon",
@@ -16,7 +16,7 @@ function polygonToFeature(polygon) {
                 return pointToLatLng(point, "1");
             })
         },
-        levelIndex: 0
+        levelIndex: levelIndex
     };
 }
 
