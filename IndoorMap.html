@@ -363,6 +363,10 @@
             return map.getLevels();
         }
         
+        function getLevelsCSV() {
+            return map.getLevels().join(',');
+        }
+        
         function setLevel(level) {
             return map.setLevel(level);
         }
