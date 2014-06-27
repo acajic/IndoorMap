@@ -485,7 +485,8 @@
                                 n.onselectstart === r.Util.falseFn && (n.onselectstart = this._onselectstart, this._onselectstart = null)
                             },
                             hasClass: function (t, e) {
-                                return t.className.length > 0 && RegExp("(^|\\s)" + e + "(\\s|$)").test(t.className)
+                                var match = t.className.length > 0 && RegExp("(^|\\s)" + e + "(\\s|$)").test(t.className);
+                                return match;
                             },
                             addClass: function (t, e) {
                                 r.DomUtil.hasClass(t, e) || (t.className += (t.className ? " " : "") + e)
@@ -761,7 +762,16 @@
                                     s = this.project(t.getNorthEast()),
                                     a = 0,
                                     l = 0;
-                                return n.y < s.y && (l = Math.ceil(s.y - n.y)), n.x > s.x && (a = Math.floor(s.x - n.x)), i.y > o.y && (l = Math.floor(o.y - i.y)), i.x < o.x && (a = Math.ceil(o.x - i.x)), a || l ? this.panBy([a, l]) : this
+
+
+                                // >>>>>>>>>>> ANDRO
+                                var testValue = (n.y < s.y && (l = Math.ceil(s.y - n.y)), n.x > s.x && (a = Math.floor(s.x - n.x)), i.y > o.y && (l = Math.floor(o.y - i.y)), i.x < o.x && (a = Math.ceil(o.x - i.x)), a);
+                                var result = testValue || l ? this.panBy([0, 0]) : this;
+                                
+                                // <<<<<<<<<<< ORIGINAL
+                                // var result = (n.y < s.y && (l = Math.ceil(s.y - n.y)), n.x > s.x && (a = Math.floor(s.x - n.x)), i.y > o.y && (l = Math.floor(o.y - i.y)), i.x < o.x && (a = Math.ceil(o.x - i.x)), a || l ? this.panBy([a, l]) : this)
+                                // ===========
+                                return result;
                             },
                             addLayer: function (t) {
                                 var e = r.stamp(t);
