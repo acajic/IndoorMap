@@ -5486,7 +5486,7 @@
                             q = e.eflags.CDATA | e.eflags.RCDATA,
                             V = {}, J = {}, X = /^(?:https?|mailto|data)$/i,
                             $ = {};
-                        return $.escapeAttrib = $.escapeAttrib = r, $.makeHtmlSanitizer = $.makeHtmlSanitizer = v, $.makeSaxParser = $.makeSaxParser = l, $.makeTagPolicy = $.makeTagPolicy = w, $.normalizeRCData = $.normalizeRCData = a, $.sanitize = $.sanitize = M, $.sanitizeAttribs = $.sanitizeAttribs = E, $.sanitizeWithPolicy = $.sanitizeWithPolicy = x, $.unescapeEntities = $.unescapeEntities = s, $
+                        return $j.escapeAttrib = $j.escapeAttrib = r, $j.makeHtmlSanitizer = $j.makeHtmlSanitizer = v, $j.makeSaxParser = $j.makeSaxParser = l, $j.makeTagPolicy = $j.makeTagPolicy = w, $j.normalizeRCData = $j.normalizeRCData = a, $j.sanitize = $j.sanitize = M, $j.sanitizeAttribs = $j.sanitizeAttribs = E, $j.sanitizeWithPolicy = $j.sanitizeWithPolicy = x, $j.unescapeEntities = $j.unescapeEntities = s, $
                     }(i),
                         o = n.sanitize;
                     i.ATTRIBS["*::style"] = 0, i.ELEMENTS.style = 0, i.ATTRIBS["a::target"] = 0, i.ELEMENTS.video = 0, i.ATTRIBS["video::src"] = 0, i.ATTRIBS["video::poster"] = 0, i.ATTRIBS["video::controls"] = 0, i.ELEMENTS.audio = 0, i.ATTRIBS["audio::src"] = 0, i.ATTRIBS["video::autoplay"] = 0, i.ATTRIBS["video::controls"] = 0, "undefined" != typeof window && (window.html = n, window.html_sanitize = o), e !== void 0 && (e.exports = o)

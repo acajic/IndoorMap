@@ -1,4 +1,4 @@
-// depends on jQuery for creating shallow copies of javascript objects - $.extend({}, object). Also for various utility functions like $.grep()
+// depends on jQuery for creating shallow copies of javascript objects - $j.extend({}, object). Also for various utility functions like $j.grep()
 // Author: Andrija Cajic, XEETech.com
 
 
@@ -419,11 +419,11 @@ function pointsDistance(point1, point2) {
 }
 
 function cloneObject(object) {
-    return $.extend({}, object);
+    return $j.extend({}, object);
 }
 
 function filterFirstMatchingElement(array, fn) {
-    var element = $.grep(array, fn)[0];
+    var element = $j.grep(array, fn)[0];
     return element;
 }
 

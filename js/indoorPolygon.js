@@ -12,7 +12,7 @@ function polygonToFeature(polygon, levelIndex) {
     return {
         geometry: {
             type: "Polygon",
-            coordinates: $.map(polygon, function (point) {
+            coordinates: $j.map(polygon, function (point) {
                 return pointToLatLng(point, "1");
             })
         },

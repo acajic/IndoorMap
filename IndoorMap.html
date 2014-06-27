@@ -18,7 +18,11 @@
 
 
 <script src='http://indoor.io/indoor.js/1.1.0/js/jquery-1.9.1.min.js'> </script>
-<script src='http://code.jquery.com/ui/jquery-ui-git.js'> </script>
+<script type="text/javascript">
+    jQuery.noConflict();
+    $j = jQuery;
+</script>
+<script src='scripts/jquery-ui-git.js'> </script>
 
 
 
@@ -388,7 +392,7 @@
         // var highlightedBeacon = null;
         
         function highlightBeacon(uuid, major, minor, tags, highlightSquareSize) {
-            var beaconToHighlight = $.grep(beacons, function (someBeacon) {
+            var beaconToHighlight = $j.grep(beacons, function (someBeacon) {
                 return someBeacon.uuid == uuid && someBeacon.major == major && someBeacon.minor == minor;
             })[0];
 
@@ -510,7 +514,7 @@
         }
 
         function panToBeacon(uuid, major, minor) {
-            var beaconTarget = $.grep(beacons, function (someBeacon) {
+            var beaconTarget = $j.grep(beacons, function (someBeacon) {
                 return someBeacon.uuid == uuid && someBeacon.major == major && someBeacon.minor == minor;
             })[0];
 
@@ -529,14 +533,14 @@
             removeHighlightsByTag("route");
 
 
-            var beaconFrom = $.grep(beacons, function (someBeacon) {
+            var beaconFrom = $j.grep(beacons, function (someBeacon) {
                 return someBeacon.uuid == uuid && someBeacon.major == majorFrom && someBeacon.minor == minorFrom;
             })[0];
 
             if (!beaconFrom)
                 return;
 
-            var beaconTo = $.grep(beacons, function (someBeacon) {
+            var beaconTo = $j.grep(beacons, function (someBeacon) {
                 return someBeacon.uuid == uuid && someBeacon.major == majorTo && someBeacon.minor == minorTo;
             })[0];
 
@@ -561,7 +565,7 @@
               })
               .addTo(map);
             // we like white circles with a shadow
-            $('.L_indoor_spinner')
+            $j('.L_indoor_spinner')
               .css('box-shadow', '0px 0px 10px white')
               .css('padding-right', '2px')
               .css('background', 'white')

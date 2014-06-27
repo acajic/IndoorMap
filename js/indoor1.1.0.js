@@ -1391,7 +1391,7 @@ L.indoor = {
         var virtualCoordinates = false;
 
         // this code hides the map for a fade-in effect while having a constant layout during the map load
-        var mapDiv = $(document.getElementById(element));
+        var mapDiv = $j(document.getElementById(element));
         mapDiv.css('opacity', 0.00001);
         var map = new L.mapbox.map(element, undefined, options);
 
@@ -1714,8 +1714,8 @@ L.indoor = {
             }
 
             // if there's a default level chooser element, update it accordingly
-            $('#level_chooser a').attr('class', '');
-            $('#level_chooser a[level=' + level + ']').attr('class', 'leaflet-disabled');
+            $j('#level_chooser a').attr('class', '');
+            $j('#level_chooser a[level=' + level + ']').attr('class', 'leaflet-disabled');
 
             // define tile and grid layers 
             var tileLayer = L.mapbox.tileLayer(levels[level]);
@@ -1753,13 +1753,13 @@ L.indoor = {
                             if (map._layers[i].setOpacity) {
                                 map._layers[i].setOpacity(1);
                             } else if (map._layers[i]._container) {
-                                $(map._layers[i]._container).show();
+                                $j(map._layers[i]._container).show();
                             }
                         } else {
                             if (map._layers[i].setOpacity) {
                                 map._layers[i].setOpacity(0);
                             } else if (map._layers[i]._container) {
-                                $(map._layers[i]._container).hide();
+                                $j(map._layers[i]._container).hide();
                             }
                         }
                     }
@@ -1795,21 +1795,21 @@ L.indoor = {
             if (levelControl != flag || !levelControlSet) {
                 levelControlSet = true;
                 if (flag) {
-                    var level_chooser = $(document.getElementById(element))
+                    var level_chooser = $j(document.getElementById(element))
                         .find(".leaflet-top.leaflet-left .level_chooser[mapInstanceId=" + mapInstanceId + "]");
                     if (level_chooser.length > 0)
                         level_chooser.remove();
                     else
-                        $(document.getElementById(element))
+                        $j(document.getElementById(element))
                             .find(".leaflet-top.leaflet-left")
                             .append('<div id="level_chooser_title" class="level_chooser_title" mapInstanceId="' + mapInstanceId + '" style="font-weight: bold; font-size: 13px; color: #444; text-shadow: 0px 1px 0px white; ' +
                                 'margin-left: 10px; margin-top: 10px; margin-bottom: -8px;">Levels</div>');
-                    $(document.getElementById(element))
+                    $j(document.getElementById(element))
                         .find(".leaflet-top.leaflet-left")
                         .append('<div class="leaflet-bar level_chooser leaflet-control" mapInstanceId="' + mapInstanceId + '" id="level_chooser"></div>');
 
                     for (var j = 0; j < loadedLevels.length; j++) {
-                        $('.level_chooser[mapInstanceId=' + mapInstanceId + ']')
+                        $j('.level_chooser[mapInstanceId=' + mapInstanceId + ']')
                             .append('<a onmousemove="if(!event) event=window.event;' +
                                 'if( event.cancelBubble ) event.cancelBubble = true;' +
                                 'if( event.stopPropagation ) event.stopPropagation(); ' +
@@ -1823,8 +1823,8 @@ L.indoor = {
                                 'level="' + loadedLevels[j] + '">' + loadedLevels[j] + '</a>');
                     }
                 } else {
-                    $('.level_chooser[mapInstanceId=' + mapInstanceId + ']').remove();
-                    $('.level_chooser_title[mapInstanceId' + mapInstanceId + ']').remove();
+                    $j('.level_chooser[mapInstanceId=' + mapInstanceId + ']').remove();
+                    $j('.level_chooser_title[mapInstanceId' + mapInstanceId + ']').remove();
                 }
             }
 
@@ -2072,7 +2072,7 @@ L.indoor = {
 
             p1.level = p1.l = parseInt(levels[p1.level].levelIndex);
             p2.level = p2.l = parseInt(levels[p2.level].levelIndex);
-            $.ajax({
+            $j.ajax({
                 url: window.location.protocol + '//navi.indoor.io/navi/maps/' + _.project + '/route.jsonp?' +
                     'lat1=' + (p1.lat) + '&lon1=' + p1.lon + '&level1=' + p1.level +
                     '&lat2=' + (p2.lat) + '&lon2=' + p2.lon + '&level2=' + p2.level +
@@ -2160,7 +2160,7 @@ L.indoor = {
 
                 parseQuery(query, '');
 
-                $.getJSON(window.location.protocol + '//navi.indoor.io/navi/maps/' + _.project +
+                $j.getJSON(window.location.protocol + '//navi.indoor.io/navi/maps/' + _.project +
                     '/search.jsonp?' + str +
                     '&callback=?')
                     .fail(function (jqXHR, textStatus, errorThrown) {
@@ -2284,7 +2284,7 @@ L.indoor = {
         function levelLoadFunction(project, i) {
             return function () {
                 loadedLevels.push({});
-                $.ajax({
+                $j.ajax({
                     dataType: 'jsonp',
                     jsonp: 'callback',
                     url: window.location.protocol + '//tile.indoor.io/api/Tileset/' + project.levels[i].source + '?callback=?'
@@ -2311,7 +2311,7 @@ L.indoor = {
         }
 
         // this ajax call is the beginning of the map initialization!
-        $.ajax({
+        $j.ajax({
             dataType: 'jsonp',
             jsonp: 'callback',
             url: window.location.protocol + '//tile.indoor.io/export/web/' + _.map + '/' + _.project + '?callback=?'
@@ -3109,4 +3109,4 @@ L.indoor.coordinates = function () {
 
 // trigger an 'indoorjs' event; there may be somebody listening to it
 // this event means just that indoor.js has been defined
-$(document).trigger('indoorjs');
+$j(document).trigger('indoorjs');

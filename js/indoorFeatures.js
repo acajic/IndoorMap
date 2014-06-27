@@ -1,19 +1,19 @@
 ﻿function squareFeatureAroundLatLng(latLng, size) {
     var latLngArray = [];
-    var latLngTopLeft = $.extend({}, latLng);
+    var latLngTopLeft = $j.extend({}, latLng);
     latLngTopLeft.lat += size / 2;
     latLngTopLeft.lng -= size / 2;
     latLngArray.push(latLngTopLeft);
 
-    var latLngBottomLeft = $.extend({}, latLng);
+    var latLngBottomLeft = $j.extend({}, latLng);
     latLngBottomLeft.lat -= size / 2;
     latLngBottomLeft.lng -= size / 2;
     latLngArray.push(latLngBottomLeft);
-    var latLngBottomRight = $.extend({}, latLng);
+    var latLngBottomRight = $j.extend({}, latLng);
     latLngBottomRight.lat -= size / 2;
     latLngBottomRight.lng += size / 2;
     latLngArray.push(latLngBottomRight);
-    var latLngTopRight = $.extend({}, latLng);
+    var latLngTopRight = $j.extend({}, latLng);
     latLngTopRight.lat += size / 2;
     latLngTopRight.lng += size / 2;
     latLngArray.push(latLngTopRight);
