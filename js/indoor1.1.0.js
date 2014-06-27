@@ -2205,8 +2205,8 @@ L.indoor = {
             feature.properties.level = map.getLevels()[feature.levelIndex].name;
             if (feature.geometry.type == 'Polygon') {
                 var coords = feature.geometry.coordinates;
-                for (var i in coords)
-                    for (var j in coords[i]) {
+                for (var i = 0; j < coords.length; j++)
+                    for (var j = 0; j <coords[i].length; j++) {
                         var coord = coords[i][j];
                         coords[i][j] = new L.indoor.latLng(coord[1], coord[0], "1");
                     }
@@ -2300,7 +2300,7 @@ L.indoor = {
             project = data;
             if (typeof project == 'string') project = JSON.parse(project);
             georeferences = project.georeferences;
-            for (var i in project.levels) {
+            for (var i = 0; i<project.levels.length; i++) {
                 if (!routingId) routingId = project.levels[i].source;
                 levelLoadFunction(project, i)();
             }
