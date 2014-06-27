@@ -275,7 +275,11 @@
 
 
     function setBeacons(beaconsArray) {
-        beacons = beaconsArray;
+        beacons = [];
+        for (var i = 0; i < beaconsArray.length; i++) {
+            var beacon = beaconsArray[i];
+            beacons.push(normalizeBeacon(beacon));
+        }
     }
 
 
@@ -400,6 +404,25 @@
         }
     }
 
+
+    // ******** PANNING **********
+
+    function panTo(lat, lng) {
+        map.panTo({lat: lat, lng: lng});
+    }
+
+    function panToBeacon(uuid, major, minor) {
+        var beaconTarget = $.grep(beacons, function (someBeacon) {
+            return someBeacon.uuid == uuid && someBeacon.major == major && someBeacon.minor == minor;
+        })[0];
+
+        if (!beaconTarget) {
+            return;
+        }
+
+        panTo(beaconTarget.lat, beaconTarget.lng);
+
+    }
 
 
     // ******** ROUTING **********

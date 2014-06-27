@@ -502,6 +502,27 @@
             }
         }
         
+
+        // ******** PANNING **********
+
+        function panTo(lat, lng) {
+            map.panTo({ lat: lat, lng: lng });
+        }
+
+        function panToBeacon(uuid, major, minor) {
+            var beaconTarget = $.grep(beacons, function (someBeacon) {
+                return someBeacon.uuid == uuid && someBeacon.major == major && someBeacon.minor == minor;
+            })[0];
+
+            if (!beaconTarget) {
+                return;
+            }
+
+            panTo(beaconTarget.lat, beaconTarget.lng);
+
+        }
+
+        
         // ******** ROUTING **********
 
         function showRouteBetweenBeacons(uuid, majorFrom, minorFrom, majorTo, minorTo, animate) {
